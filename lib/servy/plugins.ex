@@ -1,5 +1,4 @@
 defmodule Servy.Plugins do
-
   alias Servy.Conv
 
   def track(%Conv{status: 404, path: path} = conv) do

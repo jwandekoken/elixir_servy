@@ -8,7 +8,7 @@ defmodule Servy.Handler do
   import Servy.Parser, only: [parse: 1]
   import Servy.FileHandler, only: [handle_file: 2]
 
-  @pages_path Path.expand("pages", File.cwd!)
+  @pages_path Path.expand("pages", File.cwd!())
 
   @doc "Transforms the request into a response."
   def handle(request) do
@@ -34,24 +34,29 @@ defmodule Servy.Handler do
     %{conv | status: 200, resp_body: "Bear #{id}"}
   end
 
+  # name=Baloo&type=Brown
+  def route(%Conv{method: "POST", path: "/bears"} = conv) do
+    %{conv | status: 201, resp_body: "Created a #{conv.params["type"]} bear named #{conv.params["name"]}!"}
+  end
+
   def route(%Conv{method: "GET", path: "/about"} = conv) do
-      @pages_path
-      |> Path.join("about.html")
-      |> File.read
-      |> handle_file(conv)
+    @pages_path
+    |> Path.join("about.html")
+    |> File.read()
+    |> handle_file(conv)
   end
 
   def route(%Conv{method: "GET", path: "/bears/new"} = conv) do
-      @pages_path
-      |> Path.join("form.html")
-      |> File.read
-      |> handle_file(conv)
+    @pages_path
+    |> Path.join("form.html")
+    |> File.read()
+    |> handle_file(conv)
   end
 
   def route(%Conv{method: "GET", path: "/pages/" <> file} = conv) do
     @pages_path
     |> Path.join(file <> ".html")
-    |> File.read
+    |> File.read()
     |> handle_file(conv)
   end
 
@@ -62,7 +67,7 @@ defmodule Servy.Handler do
   def format_response(%Conv{} = conv) do
     # TODO: Use values in the map to create an HTTP response string:
     """
-    HTTP/1.1 #{conv |> Conv.full_status}
+    HTTP/1.1 #{conv |> Conv.full_status()}
     Content-Type: text/html
     Content-Length: #{byte_size(conv.resp_body)}
 
@@ -120,6 +125,17 @@ Accept: */*
 
 """
 
+request_7 = """
+POST /bears HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 21
+
+name=Lulz&type=Red
+"""
+
 # Making the requests:
 response = Servy.Handler.handle(request)
 IO.puts(response)
@@ -138,3 +154,6 @@ IO.puts(response_5)
 
 response_6 = Servy.Handler.handle(request_6)
 IO.puts(response_6)
+
+response_7 = Servy.Handler.handle(request_7)
+IO.puts(response_7)
