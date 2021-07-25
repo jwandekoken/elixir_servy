@@ -2,6 +2,7 @@ defmodule Servy.Handler do
   @moduledoc "Handles HTTP requests."
 
   alias Servy.Conv
+  alias Servy.BearController
 
   # the number specifies the arity of the fn we are importing
   import Servy.Plugins, only: [rewrite_path: 1, track: 1]
@@ -26,35 +27,33 @@ defmodule Servy.Handler do
   end
 
   def route(%Conv{method: "GET", path: "/bears"} = conv) do
-    %{conv | status: 200, resp_body: "Teddy, Smokey, Paddington"}
+    BearController.index(conv)
   end
 
-  # this will match anything like "/bear/:id"
-  def route(%Conv{method: "GET", path: "/bear/" <> id} = conv) do
-    %{conv | status: 200, resp_body: "Bear #{id}"}
+  # this will match anything like "/bears/:id"
+  def route(%Conv{method: "GET", path: "/bears/" <> id} = conv) do
+    params = Map.put(conv.params, "id", id)
+    BearController.show(conv, params)
   end
 
-  # name=Baloo&type=Brown
   def route(%Conv{method: "POST", path: "/bears"} = conv) do
-    IO.inspect(conv)
-
-    %{
-      conv
-      | status: 201,
-        resp_body: "Created a #{conv.params["type"]} bear named #{conv.params["name"]}!"
-    }
+    BearController.create(conv, conv.params)
   end
+
+  def route(%{method: "DELETE", path: "/bears/" <> _id} = conv) do
+    BearController.delete(conv, conv.params)
+  end
+
+  # def route(%Conv{method: "GET", path: "/bears/new"} = conv) do
+  #   @pages_path
+  #   |> Path.join("form.html")
+  #   |> File.read()
+  #   |> handle_file(conv)
+  # end
 
   def route(%Conv{method: "GET", path: "/about"} = conv) do
     @pages_path
     |> Path.join("about.html")
-    |> File.read()
-    |> handle_file(conv)
-  end
-
-  def route(%Conv{method: "GET", path: "/bears/new"} = conv) do
-    @pages_path
-    |> Path.join("form.html")
     |> File.read()
     |> handle_file(conv)
   end
@@ -91,7 +90,21 @@ Accept: */*
 
 """
 
-request_2 = """
+response = Servy.Handler.handle(request)
+IO.puts(response)
+
+request = """
+GET /bears HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+
+"""
+
+response = Servy.Handler.handle(request)
+IO.puts(response)
+
+request = """
 GET /bears/1 HTTP/1.1
 Host: example.com
 User-Agent: ExampleBrowser/1.0
@@ -99,7 +112,10 @@ Accept: */*
 
 """
 
-request_3 = """
+response = Servy.Handler.handle(request)
+IO.puts(response)
+
+request = """
 GET /bigfoot HTTP/1.1
 Host: example.com
 User-Agent: ExampleBrowser/1.0
@@ -107,7 +123,10 @@ Accept: */*
 
 """
 
-request_4 = """
+response = Servy.Handler.handle(request)
+IO.puts(response)
+
+request = """
 GET /wildlife HTTP/1.1
 Host: example.com
 User-Agent: ExampleBrowser/1.0
@@ -115,7 +134,10 @@ Accept: */*
 
 """
 
-request_5 = """
+response = Servy.Handler.handle(request)
+IO.puts(response)
+
+request = """
 GET /about HTTP/1.1
 Host: example.com
 User-Agent: ExampleBrowser/1.0
@@ -123,15 +145,20 @@ Accept: */*
 
 """
 
-request_6 = """
-GET /bears/new HTTP/1.1
-Host: example.com
-User-Agent: ExampleBrowser/1.0
-Accept: */*
+response = Servy.Handler.handle(request)
+IO.puts(response)
 
-"""
+# request = """
+# GET /bears/new HTTP/1.1
+# Host: example.com
+# User-Agent: ExampleBrowser/1.0
+# Accept: */*
 
-request_7 = """
+# """
+# response = Servy.Handler.handle(request)
+# IO.puts(response)
+
+request = """
 POST /bears HTTP/1.1
 Host: example.com
 User-Agent: ExampleBrowser/1.0
@@ -142,24 +169,5 @@ Content-Length: 21
 name=Lulz&type=Red
 """
 
-# Making the requests:
 response = Servy.Handler.handle(request)
 IO.puts(response)
-
-response_2 = Servy.Handler.handle(request_2)
-IO.puts(response_2)
-
-response_3 = Servy.Handler.handle(request_3)
-IO.puts(response_3)
-
-response_4 = Servy.Handler.handle(request_4)
-IO.puts(response_4)
-
-response_5 = Servy.Handler.handle(request_5)
-IO.puts(response_5)
-
-response_6 = Servy.Handler.handle(request_6)
-IO.puts(response_6)
-
-response_7 = Servy.Handler.handle(request_7)
-IO.puts(response_7)
