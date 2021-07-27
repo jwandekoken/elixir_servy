@@ -74,11 +74,9 @@ defmodule Servy.Handler do
   end
 
   def format_response(%Conv{} = conv) do
-    %{ "Content-Type" => content_type } = conv.headers
-
     """
     HTTP/1.1 #{conv |> Conv.full_status()}\r
-    Content-Type: #{content_type}\r
+    Content-Type: #{conv.resp_content_type}\r
     Content-Length: #{byte_size(conv.resp_body)}\r
     \r
     #{conv.resp_body}

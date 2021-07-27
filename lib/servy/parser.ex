@@ -28,7 +28,7 @@ defmodule Servy.Parser do
   # when the tail is an empty list, return the headers list
   def parse_headers([], headers), do: headers
 
-  @doc"""
+  @doc """
   Parses the given param string of the form `key1=value&key2=value2` into a map with corresponding keys and values.
 
   ## Examples
