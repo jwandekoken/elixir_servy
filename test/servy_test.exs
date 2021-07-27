@@ -1,8 +1,8 @@
 defmodule ServyTest do
   use ExUnit.Case
-  doctest Servy
+  doctest Servy.Handler
 
-  test "greets the world" do
-    assert Servy.hello() == :world
+  test "the truth" do
+    assert 1 + 1 == 2
   end
 end
