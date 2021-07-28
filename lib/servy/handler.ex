@@ -22,6 +22,12 @@ defmodule Servy.Handler do
     |> format_response
   end
 
+  def route(%Conv{ method: "GET", path: "/hibernate/" <> time } = conv) do
+    time |> String.to_integer |> :timer.sleep
+
+    %{ conv | status: 200, resp_body: "Awake!" }
+  end
+
   def route(%Conv{method: "GET", path: "/wildthings"} = conv) do
     %{conv | status: 200, resp_body: "Bears, Lions, Tigers"}
   end
