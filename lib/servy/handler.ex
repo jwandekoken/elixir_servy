@@ -24,7 +24,15 @@ defmodule Servy.Handler do
     |> format_response
   end
 
-  def route(%Conv{ method: "GET", path: "/sensors" } = conv) do
+  def route(%Conv{method: "POST", path: "/pledges"} = conv) do
+    Servy.PledgeController.create(conv, conv.params)
+  end
+
+  def route(%Conv{method: "GET", path: "/pledges"} = conv) do
+    Servy.PledgeController.index(conv)
+  end
+
+  def route(%Conv{method: "GET", path: "/sensors"} = conv) do
     task = Task.async(fn -> Tracker.get_location("bigfoot") end)
 
     snapshots =
@@ -35,13 +43,13 @@ defmodule Servy.Handler do
 
     where_is_bigfoot = Task.await(task)
 
-    %{ conv | status: 200, resp_body: inspect {snapshots, where_is_bigfoot}}
+    %{conv | status: 200, resp_body: inspect({snapshots, where_is_bigfoot})}
   end
 
-  def route(%Conv{ method: "GET", path: "/hibernate/" <> time } = conv) do
-    time |> String.to_integer |> :timer.sleep
+  def route(%Conv{method: "GET", path: "/hibernate/" <> time} = conv) do
+    time |> String.to_integer() |> :timer.sleep()
 
-    %{ conv | status: 200, resp_body: "Awake!" }
+    %{conv | status: 200, resp_body: "Awake!"}
   end
 
   def route(%Conv{method: "GET", path: "/wildthings"} = conv) do

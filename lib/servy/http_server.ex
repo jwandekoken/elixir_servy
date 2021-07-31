@@ -46,10 +46,11 @@ defmodule Servy.HttpServer do
   sends a response back over the same socket.
   """
   def serve(client_socket) do
-    IO.puts("#{inspect self()}: Working on it!")
+    IO.puts("#{inspect(self())}: Working on it!")
+
     client_socket
     |> read_request
-    |> Servy.Handler.handle
+    |> Servy.Handler.handle()
     |> write_response(client_socket)
   end
 
