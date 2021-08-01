@@ -3,8 +3,6 @@ defmodule Servy.Handler do
 
   alias Servy.Conv
   alias Servy.BearController
-  alias Servy.VideoCam
-  alias Servy.Tracker
 
   # the number specifies the arity of the fn we are importing
   import Servy.Plugins, only: [rewrite_path: 1, track: 1]
@@ -33,17 +31,9 @@ defmodule Servy.Handler do
   end
 
   def route(%Conv{method: "GET", path: "/sensors"} = conv) do
-    task = Task.async(fn -> Tracker.get_location("bigfoot") end)
+    sensor_data = Servy.SensorServer.get_sensor_data()
 
-    snapshots =
-      ["cam-1", "cam-2", "cam-3"]
-      # |> Enum.map(fn(cam) -> Task.async(fn -> VideoCam.get_snapshot(cam) end) end)
-      |> Enum.map(&Task.async(fn -> VideoCam.get_snapshot(&1) end))
-      |> Enum.map(&Task.await(&1))
-
-    where_is_bigfoot = Task.await(task)
-
-    %{conv | status: 200, resp_body: inspect({snapshots, where_is_bigfoot})}
+    %{conv | status: 200, resp_body: inspect(sensor_data)}
   end
 
   def route(%Conv{method: "GET", path: "/hibernate/" <> time} = conv) do
