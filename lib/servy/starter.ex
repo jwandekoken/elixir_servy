@@ -19,13 +19,9 @@ defmodule Servy.Starter do
     {:noreply, server_pid}
   end
 
-  defp start_http_server() do
-    IO.puts("Starting the HTTP server...")
-    # server_pid = spawn(Servy.HttpServer, :start, [4000])
-    # Process.link(server_pid)
-    server_pid = spawn_link(Servy.HttpServer, :start, [4000])
-    Process.register(server_pid, :http_server)
-    server_pid
+  @impl true
+  def handle_call(:get_server, _from, state) do
+    {:reply, state, state}
   end
 
   # Client interface
@@ -33,5 +29,20 @@ defmodule Servy.Starter do
   def start() do
     IO.puts("Init starter module...")
     GenServer.start(__MODULE__, :ok, name: __MODULE__)
+  end
+
+  def get_server do
+    GenServer.call(__MODULE__, :get_server)
+  end
+
+  # Private functions
+
+  defp start_http_server() do
+    IO.puts("Starting the HTTP server...")
+    # server_pid = spawn(Servy.HttpServer, :start, [4000])
+    # Process.link(server_pid)
+    server_pid = spawn_link(Servy.HttpServer, :start, [4000])
+    Process.register(server_pid, :http_server)
+    server_pid
   end
 end
