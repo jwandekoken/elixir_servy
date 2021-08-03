@@ -1,13 +1,18 @@
 defmodule Servy.SensorServer do
 
   @name :sensor_server
-  @refresh_interval :timer.seconds(5)
 
   use GenServer
 
   # Client Interface
-  def start do
-    GenServer.start(__MODULE__, %{}, name: @name)
+
+  def start_link(interval) do
+    IO.puts("Starting the sensor server with #{interval} ms refresh...")
+    GenServer.start_link(
+      __MODULE__,
+      %{ interval: interval },
+      name: @name
+    )
   end
 
   def get_sensor_data() do
@@ -15,19 +20,19 @@ defmodule Servy.SensorServer do
   end
 
   # Server Callbacks
+
   @impl true
-  def init(_state) do
-    initial_state = run_tasks_to_get_sensor_data()
-    # every amount of time (1 hour in production, 5 secs in dev env), the process gonna send a :refresh message to itself, demanding a refresh on the cache state
-    schedule_refresh()
+  def init(state) do
+    initial_state = run_tasks_to_get_sensor_data(state.interval)
+    schedule_refresh(state.interval)
     {:ok, initial_state}
   end
 
   @impl true
-  def handle_info(:refresh, _state) do
+  def handle_info(:refresh, state) do
     IO.puts("Refreshing the cache...")
-    new_state = run_tasks_to_get_sensor_data()
-    schedule_refresh()
+    new_state = run_tasks_to_get_sensor_data(state.interval)
+    schedule_refresh(state.interval)
     {:noreply, new_state}
   end
 
@@ -42,7 +47,9 @@ defmodule Servy.SensorServer do
     {:reply, state, state}
   end
 
-  defp run_tasks_to_get_sensor_data do
+  # Private functions
+
+  defp run_tasks_to_get_sensor_data(interval) do
     IO.puts "Running tasks to get sensor data..."
 
     task = Task.async(fn -> Servy.Tracker.get_location("bigfoot") end)
@@ -54,10 +61,10 @@ defmodule Servy.SensorServer do
 
     where_is_bigfoot = Task.await(task)
 
-    %{snapshots: snapshots, location: where_is_bigfoot}
+    %{snapshots: snapshots, location: where_is_bigfoot, interval: interval}
   end
 
-  defp schedule_refresh() do
-    Process.send_after(self(), :refresh, @refresh_interval)
+  defp schedule_refresh(interval) do
+    Process.send_after(self(), :refresh, interval)
   end
 end

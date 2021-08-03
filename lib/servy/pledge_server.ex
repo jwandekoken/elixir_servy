@@ -1,13 +1,41 @@
 defmodule Servy.PledgeServer do
   @process_name :pledge_server
 
-  use GenServer
+  use GenServer, restart: :temporary
 
   defmodule State do
     defstruct cache_size: 3, pledges: []
   end
 
+  # Client interface
+
+  def start_link(_arg) do
+    IO.puts("Starting the pledge server...")
+    GenServer.start_link(__MODULE__, %State{}, name: @process_name)
+  end
+
+  def create_pledge(name, amount) do
+    GenServer.call(@process_name, {:create_pledge, name, amount})
+  end
+
+  def recent_pledges() do
+    GenServer.call(@process_name, :recent_pledges)
+  end
+
+  def total_pledged() do
+    GenServer.call(@process_name, :total_pledged)
+  end
+
+  def clear do
+    GenServer.cast(@process_name, :clear)
+  end
+
+  def set_cache_size(size) do
+    GenServer.cast(@process_name, {:set_cache_size, size})
+  end
+
   # Server Callbacks
+
   @impl true
   def init(init_state) do
     pledges = fetch_recent_pledges_from_service()
@@ -52,30 +80,7 @@ defmodule Servy.PledgeServer do
     {:noreply, state}
   end
 
-  # Client interface
-  def start() do
-    GenServer.start(__MODULE__, %State{}, name: @process_name)
-  end
-
-  def create_pledge(name, amount) do
-    GenServer.call(@process_name, {:create_pledge, name, amount})
-  end
-
-  def recent_pledges() do
-    GenServer.call(@process_name, :recent_pledges)
-  end
-
-  def total_pledged() do
-    GenServer.call(@process_name, :total_pledged)
-  end
-
-  def clear do
-    GenServer.cast(@process_name, :clear)
-  end
-
-  def set_cache_size(size) do
-    GenServer.cast(@process_name, {:set_cache_size, size})
-  end
+  # Private functions
 
   defp send_pledge_to_service(_name, _amount) do
     # CODE GOES HERE TO SEND PLEDGE TO EXTERNAL SERVICE
