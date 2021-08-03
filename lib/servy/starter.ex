@@ -1,6 +1,17 @@
 defmodule Servy.Starter do
   use GenServer
 
+  # Client interface
+
+  def start_link(_arg) do
+    IO.puts("Init starter module...")
+    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
+  end
+
+  def get_server do
+    GenServer.call(__MODULE__, :get_server)
+  end
+
   # Callbacks
 
   @impl true
@@ -22,17 +33,6 @@ defmodule Servy.Starter do
   @impl true
   def handle_call(:get_server, _from, state) do
     {:reply, state, state}
-  end
-
-  # Client interface
-
-  def start() do
-    IO.puts("Init starter module...")
-    GenServer.start(__MODULE__, :ok, name: __MODULE__)
-  end
-
-  def get_server do
-    GenServer.call(__MODULE__, :get_server)
   end
 
   # Private functions
