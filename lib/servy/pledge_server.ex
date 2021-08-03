@@ -1,7 +1,7 @@
 defmodule Servy.PledgeServer do
   @process_name :pledge_server
 
-  use GenServer, restart: :temporary
+  use GenServer
 
   defmodule State do
     defstruct cache_size: 3, pledges: []
