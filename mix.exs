@@ -19,13 +19,14 @@ defmodule Servy.MixProject do
       # This specifies the callback module to invoke when the application is started
       # The first arg is the module name, the second is a list of args
       mod: {Servy, []},
-      env: [port: 3000]
+      env: [port: 3000, env: Mix.env()]
     ]
   end
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:distillery, "~> 2.0"},
       {:poison, "~> 5.0"},
       {:httpoison, "~> 1.8"}
     ]
